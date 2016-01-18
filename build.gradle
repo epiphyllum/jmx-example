@@ -1,0 +1,55 @@
+apply plugin: 'eclipse'
+apply plugin: 'application'     // 生成bin lib的distribution :  gradle distTar
+
+allprojects {
+    apply plugin: 'java'
+    apply plugin: 'maven'           // 发布artifacts
+
+    version = '1.0'
+    group = 'com.epiphyllum.jmxexample'
+    description = 'jmx examples'
+
+    [compileJava, compileTestJava]*.options*.encoding = 'UTF-8'
+
+    sourceCompatibility = 1.8
+    targetCompatibility = 1.8
+}
+
+mainClassName = 'com.epiphyllum.jmxexample.Main'
+applicationDefaultJvmArgs = [
+        "-Dcom.sun.management.jmxremote",
+        "-Dcom.sun.management.jmxremote.port=9999" ,
+        "-Dcom.sun.management.jmxremote.authenticate=false" ,
+        "-Dcom.sun.management.jmxremote.ssl=false"
+];
+
+applicationName = 'mbserver'
+
+// 罚金生成
+task createClient(type: CreateStartScripts) {
+    outputDir = startScripts.outputDir
+    mainClassName = 'com.epiphyllum.jmxexample.Client'
+    applicationName = 'mbsclient'
+    classpath = startScripts.classpath
+    defaultJvmOpts = []
+}
+
+
+def scriptTaskList = [
+        createClient
+]
+
+distZip {
+    archiveName = project.name + '.zip'
+}
+
+distTar {
+//    archiveName = project.name + '-' + version + '.tar'
+    archiveName = project.name + '.tar'
+}
+
+// 依赖
+distZip.dependsOn(scriptTaskList)
+distTar.dependsOn(scriptTaskList)
+
+
